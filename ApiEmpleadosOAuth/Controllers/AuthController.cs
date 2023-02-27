@@ -4,7 +4,9 @@ using ApiEmpleadosOAuth.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ApiEmpleadosOAuth.Controllers
 {
@@ -32,8 +34,8 @@ namespace ApiEmpleadosOAuth.Controllers
             Empleado empleado =
                 this.repo.ExisteEmpleado(model.UserName
                 , int.Parse(model.Password));
-            if (empleado == null) {
-                //NO SON CORRECTOS LOS DATOS
+            if (empleado == null)
+            {
                 return Unauthorized();
             }
             else
@@ -42,23 +44,32 @@ namespace ApiEmpleadosOAuth.Controllers
                 SigningCredentials credentials =
                     new SigningCredentials(this.helper.GetKeyToken()
                     , SecurityAlgorithms.HmacSha256);
-                //ES EL MOMENTO DE GENERAR UN TOKEN
-                //EL TOKEN ESTA COMPUESTO POR ISSUER, AUDIENCE, CREDENTIALS
-                //Y POR UN TIEMPO DETERMINADO
+                //DENTRO DEL TOKEN PODEMOS ALMACENAR CUALQUIER INFORMACION
+                //EN FORMATO JSON MEDIANTE UN ARRAY LLAMADO claims
+                string jsonEmpleado = JsonConvert.SerializeObject(empleado);
+                Claim[] claims = new[]
+                {
+                    new Claim("UserData", jsonEmpleado)
+                };
+                //ES EL MOMENTO DE GENERAR EL TOKEN
+                //EL TOKEN ESTARA COMPUESTO POR ISSUER, AUDIENCE, CREDENTIALS
+                //TIME
                 JwtSecurityToken token =
-                    new JwtSecurityToken
-                    (
+                    new JwtSecurityToken(
+                        claims: claims,
                         issuer: this.helper.Issuer,
                         audience: this.helper.Audience,
                         signingCredentials: credentials,
                         expires: DateTime.UtcNow.AddMinutes(30),
                         notBefore: DateTime.UtcNow
                         );
-                return Ok(new
-                {
-                    response =
-                    new JwtSecurityTokenHandler().WriteToken(token)
-                }); 
+                //DEVOLVEMOS UNA RESPUESTA CORRECTA CON EL TOKEN
+                return Ok(
+                    new
+                    {
+                        response =
+                        new JwtSecurityTokenHandler().WriteToken(token)
+                    });
             }
         }
     }
