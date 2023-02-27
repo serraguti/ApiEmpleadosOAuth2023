@@ -1,5 +1,6 @@
 ﻿using ApiEmpleadosOAuth.Models;
 using ApiEmpleadosOAuth.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace ApiEmpleadosOAuth.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Empleado>> GetEmpleados()
         {
             return this.repo.GetEmpleados();

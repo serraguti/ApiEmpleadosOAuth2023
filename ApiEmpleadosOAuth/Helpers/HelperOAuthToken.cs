@@ -7,9 +7,9 @@ namespace ApiEmpleadosOAuth.Helpers
 {
     public class HelperOAuthToken
     {
-        private string Issuer { get; set; }
-        private string Audience { get; set; }
-        private string SecretKey { get; set; }
+        public string Issuer { get; set; }
+        public string Audience { get; set; }
+        public string SecretKey { get; set; }
 
         public HelperOAuthToken(IConfiguration configuration)
         {
